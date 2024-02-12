@@ -24,20 +24,40 @@ lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=10, minLineLength=1, ma
 nodes = []
 edges_list = []
 
+edges_list_index = []
+
+
 # 각 선분에 대해 노드와 간선 추출
-for line in lines:
+for index, line in enumerate(lines):
     x1, y1, x2, y2 = line[0]
+
+    length = round(np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2))
+
+    # 시작점의 인덱스 계산 또는 이미 존재하는 노드의 인덱스 찾기
+    if (int(x1), int(y1)) in nodes:
+        start_index = nodes.index((int(x1), int(y1)))
+    else:
+        start_index = len(nodes)
+        nodes.append((int(x1), int(y1)))
+
+    # 끝점의 인덱스 계산 또는 이미 존재하는 노드의 인덱스 찾기
+    if (int(x2), int(y2)) in nodes:
+        end_index = nodes.index((int(x2), int(y2)))
+    else:
+        end_index = len(nodes)
+        nodes.append((int(x2), int(y2)))
 
     # 노드 추가
     nodes.append((int(x1), int(y1)))
     nodes.append((int(x2), int(y2)))
 
     # 간선 추가
-    edges_list.append([(int(x1), int(y1)), (int(x2), int(y2))])
+    edges_list_index.append([start_index, end_index, length])
+
 
 # 노드와 간선 출력
 print("Nodes:", nodes)
-print("Edges:", edges_list)
+print("Edges_index:", edges_list_index)
 print("Number of nodes:", len(nodes))
 print("Number of edges:", len(edges_list))
 
@@ -51,7 +71,7 @@ for edge in edges_list:
 
 # 이미지에서 추출한 노드와 간선 정보 저장을 위한 딕셔너리
 graph_data = {"nodes": nodes,
-              "edges": edges_list}
+              "edges": edges_list_index}
 print(graph_data)
 
 # 노드와 간선 정보를 JSON 파일로 저장
@@ -62,4 +82,3 @@ with open('graph_data.json', 'w') as json_file:
 cv2.imshow('Image with Nodes and Edges', image)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-
