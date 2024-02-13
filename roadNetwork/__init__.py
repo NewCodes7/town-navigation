@@ -1,84 +1,56 @@
 import cv2
-import numpy as np
-import json
 
 # 이미지 불러오기
-image = cv2.imread('sample4.png')
+image = cv2.imread('sample5.png')
 
-# 그레이스케일로 변환
+# 그레이스케일 변환
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
 # 가우시안 블러 적용
 blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 
+# 이진화
+ret, binary = cv2.threshold(blurred, 127, 255, cv2.THRESH_BINARY)
 
-# Canny 엣지 검출 수행
-edges = cv2.Canny(blurred, threshold1=1, threshold2=30)
-# 엣지를 선분으로 간주함. 두 번째 파라미터는 엣지를 검출하는 정도. 세 번째 파라미터는 각 엣지를 이어주는 정도.
+# 엣지 검출
+edges = cv2.Canny(binary, threshold1=30, threshold2=100)
 
-# 허프 변환을 사용하여 선분 검출
-lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=10, minLineLength=1, maxLineGap=4)
-# 값을 최대한 낮춰서 우선 해결 (향후 최적화 해야 함)
-
-# 노드와 간선 정보 저장을 위한 리스트
-nodes = []
-edges_list = []
-
-edges_list_index = []
+# HoughCircles 함수 호출 전에 이미지를 전처리합니다.
+circles = cv2.HoughCircles(edges, cv2.HOUGH_GRADIENT, 1, 80, param1=30, param2=4, minRadius=5, maxRadius=7)
 
 
-# 각 선분에 대해 노드와 간선 추출
-for index, line in enumerate(lines):
-    x1, y1, x2, y2 = line[0]
+# circles와 circles2가 None이 아닌지 확인 후에만 반복문을 실행합니다.
+if circles is not None:
+    for i in circles[0]:
+        cv2.circle(image, (int(i[0]), int(i[1])), int(i[2]), (255, 0, 0), 2)
 
-    length = round(np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2))
-
-    # 시작점의 인덱스 계산 또는 이미 존재하는 노드의 인덱스 찾기
-    if (int(x1), int(y1)) in nodes:
-        start_index = nodes.index((int(x1), int(y1)))
-    else:
-        start_index = len(nodes)
-        nodes.append((int(x1), int(y1)))
-
-    # 끝점의 인덱스 계산 또는 이미 존재하는 노드의 인덱스 찾기
-    if (int(x2), int(y2)) in nodes:
-        end_index = nodes.index((int(x2), int(y2)))
-    else:
-        end_index = len(nodes)
-        nodes.append((int(x2), int(y2)))
-
-    # 노드 추가
-    nodes.append((int(x1), int(y1)))
-    nodes.append((int(x2), int(y2)))
-
-    # 간선 추가
-    edges_list_index.append([start_index, end_index, length])
-
-
-# 노드와 간선 출력
-print("Nodes:", nodes)
-print("Edges_index:", edges_list_index)
-print("Number of nodes:", len(nodes))
-print("Number of edges:", len(edges_list))
-
-# 이미지에 노드와 간선 그리기
-for node in nodes:
-    cv2.circle(image, node, 5, (0, 0, 255), -1)
-
-for edge in edges_list:
-    cv2.line(image, edge[0], edge[1], (0, 255, 0), 2)
-
-
-# 이미지에서 추출한 노드와 간선 정보 저장을 위한 딕셔너리
-graph_data = {"nodes": nodes,
-              "edges": edges_list_index}
-print(graph_data)
-
-# 노드와 간선 정보를 JSON 파일로 저장
-with open('graph_data.json', 'w') as json_file:
-    json.dump(graph_data, json_file)
-
-# 이미지 표시
-cv2.imshow('Image with Nodes and Edges', image)
+cv2.imshow("Contours", image)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
+
+
+# 도로의 외곽선 그리기
+src = cv2.imread("sample5.png")  # 원본 이미지
+# cv_imshow(src)
+dst = src.copy()
+gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
+
+ret, binary = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
+binary = cv2.bitwise_not(binary)
+
+contours, hierarchy = cv2.findContours(binary, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
+
+for i in range(len(contours)):
+    cv2.drawContours(dst, [contours[i]], 0, (0, 0, 0), 2)
+    # cv2.putText(dst, str(i), tuple(contours[i][0][0]), cv2.FONT_HERSHEY_COMPLEX, 0.8, (0, 0, 0), 2)
+    print(i, hierarchy[0][i])
+
+    # cv2.waitKey(0)
+
+cv2.imshow("Contours", src)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+
+
+# 이제 해야 할 건 원 사이의 간선긋기!!!!!
