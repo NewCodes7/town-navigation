@@ -8,6 +8,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 public class JsonReader {
     private List<List<Node>> graph = new ArrayList<>();
@@ -18,7 +21,7 @@ public class JsonReader {
 
         try {
             // JSON 파일 읽기
-            JsonNode rootNode = objectMapper.readTree(new File("roadNetwork/graph_data.json"));
+            JsonNode rootNode = objectMapper.readTree(new File("roadNetwork/edges_data.json"));
 
             // 노드 정보 출력
             nodes = rootNode.path("nodes");
@@ -29,11 +32,15 @@ public class JsonReader {
 
             // 간선 정보 출력
             edges = rootNode.path("edges");
+
             for (JsonNode edge : edges) {
                 int startIndex = edge.path(0).asInt();
                 int endIndex = edge.path(1).asInt();
                 int cost = edge.path(2).asInt();
+                System.out.println(edges);
+
             }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -47,7 +54,7 @@ public class JsonReader {
             int endIndex = edge.path(1).asInt();
             int cost = edge.path(2).asInt();
             graph.get(startIndex).add(new Node(endIndex, cost));
-            System.out.println(startIndex + "-" + endIndex + "/" + cost);
+//            System.out.println(startIndex + "-" + endIndex + "/" + cost);
         }
 
     }
