@@ -8,7 +8,7 @@ public class Main {
         jsonReader.process();
         Navigator navigator = new Navigator(jsonReader.getGraph());
 
-        navigator.dijkstra(0);
+        navigator.dijkstra(0, 205);
     }
 }
 
