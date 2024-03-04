@@ -3,9 +3,9 @@ package routing;
 class Node implements Comparable<Node> {
 
     private int index;
-    private int distance;
+    private double distance;
 
-    public Node(int index, int distance) {
+    public Node(int index, double distance) {
         this.index = index;
         this.distance = distance;
     }
@@ -14,7 +14,7 @@ class Node implements Comparable<Node> {
         return this.index;
     }
 
-    public int getDistance() {
+    public double getDistance() {
         return this.distance;
     }
 
