@@ -1,6 +1,7 @@
 package com.Hserver.townrouting.service;
 
 import com.Hserver.townrouting.domain.Node;
+import jakarta.persistence.criteria.CriteriaBuilder.In;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -20,7 +21,7 @@ public class DijkstraService {
         this.graph = graph;
     }
 
-    public static void dijkstra(int start, int end) {
+    public static List<Double> dijkstra(int start, int end) {
         int V = graph.size();
         d = new double[V];
         prev = new int[V];
@@ -55,12 +56,15 @@ public class DijkstraService {
         System.out.println(d[100]);
 
 
-        List<Integer> path = new ArrayList<>();
+        List<Double> path = new ArrayList<>();
         for (int at = end; at != -1; at = prev[at]) {
-            path.add(at);
+            path.add((double) at); // 불필요한 double 형변환. 리팩토링 필요해보임.
         }
         Collections.reverse(path);
         System.out.println("Shortest Path: " + path);
         System.out.println("Shortest Distance: " + d[end]);
+
+        path.add(d[end]);
+        return path;
     }
 }
